@@ -111,6 +111,7 @@ define_categories! {
     "lint/nursery/useAsConstAssertion": "https://biomejs.dev/linter/rules/use-as-const-assertion",
     "lint/nursery/useAwait": "https://biomejs.dev/linter/rules/use-await",
     "lint/nursery/useBiomeSuppressionComment": "https://biomejs.dev/linter/rules/use-biome-suppression-comment",
+    "lint/nursery/useExportType": "https://biomejs.dev/linter/rules/use-export-type",
     "lint/nursery/useGroupedTypeImport": "https://biomejs.dev/linter/rules/use-grouped-type-import",
     "lint/nursery/useImportRestrictions": "https://biomejs.dev/linter/rules/use-import-restrictions",
     "lint/nursery/useShorthandAssign": "https://biomejs.dev/linter/rules/use-shorthand-assign",

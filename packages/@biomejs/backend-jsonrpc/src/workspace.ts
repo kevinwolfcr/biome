@@ -809,6 +809,10 @@ export interface Nursery {
 	 */
 	useAwait?: RuleConfiguration;
 	/**
+	 * Promotes the use of export type for type-only types.
+	 */
+	useExportType?: RuleConfiguration;
+	/**
 	 * Enforce the use of import type when an import only has specifiers with type qualifier.
 	 */
 	useGroupedTypeImport?: RuleConfiguration;
@@ -1472,6 +1476,7 @@ export type Category =
 	| "lint/nursery/useAsConstAssertion"
 	| "lint/nursery/useAwait"
 	| "lint/nursery/useBiomeSuppressionComment"
+	| "lint/nursery/useExportType"
 	| "lint/nursery/useGroupedTypeImport"
 	| "lint/nursery/useImportRestrictions"
 	| "lint/nursery/useShorthandAssign"

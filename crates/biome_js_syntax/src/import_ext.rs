@@ -1,6 +1,6 @@
 use crate::{
-    inner_string_text, AnyJsImportClause, AnyJsNamedImportSpecifier, JsImport, JsImportNamedClause,
-    JsModuleSource, JsSyntaxToken,
+    inner_string_text, AnyJsBinding, AnyJsImportClause, AnyJsNamedImportSpecifier, JsImport,
+    JsImportNamedClause, JsModuleSource, JsSyntaxToken,
 };
 use biome_rowan::{AstNode, SyntaxResult, TokenText};
 
@@ -26,6 +26,21 @@ impl JsImport {
 }
 
 impl AnyJsImportClause {
+    /// Type token of the import clause.
+    ///
+    /// ```ts
+    /// import { type X }
+    ///          ^^^^
+    /// ```
+    pub fn type_token(&self) -> Option<JsSyntaxToken> {
+        match self {
+            AnyJsImportClause::JsImportBareClause(_) => None,
+            AnyJsImportClause::JsImportDefaultClause(clause) => clause.type_token(),
+            AnyJsImportClause::JsImportNamedClause(clause) => clause.type_token(),
+            AnyJsImportClause::JsImportNamespaceClause(clause) => clause.type_token(),
+        }
+    }
+
     /// Source of this import clause.
     ///
     /// ```
@@ -44,35 +59,6 @@ impl AnyJsImportClause {
             Self::JsImportDefaultClause(node) => node.source(),
             Self::JsImportNamedClause(node) => node.source(),
             Self::JsImportNamespaceClause(node) => node.source(),
-        }
-    }
-}
-
-impl AnyJsNamedImportSpecifier {
-    /// LOcal name of this import specifier
-    ///
-    /// ```
-    /// use biome_js_factory::make;
-    /// use biome_js_syntax::{AnyJsNamedImportSpecifier, T};
-    ///
-    /// let binding = make::js_identifier_binding(make::ident("React"));
-    /// let specifier = make::js_shorthand_named_import_specifier(binding.into()).build();
-    /// let specifier = AnyJsNamedImportSpecifier::JsShorthandNamedImportSpecifier(specifier);
-    ///
-    /// assert_eq!(specifier.local_name().unwrap().text_trimmed(), "React");
-    /// ```
-    pub fn local_name(&self) -> Option<JsSyntaxToken> {
-        match self {
-            AnyJsNamedImportSpecifier::JsNamedImportSpecifier(specifier) => {
-                specifier.name().ok()?.value().ok()
-            }
-            AnyJsNamedImportSpecifier::JsShorthandNamedImportSpecifier(specifier) => specifier
-                .local_name()
-                .ok()?
-                .as_js_identifier_binding()?
-                .name_token()
-                .ok(),
-            AnyJsNamedImportSpecifier::JsBogusNamedImportSpecifier(_) => None,
         }
     }
 }
@@ -104,6 +90,54 @@ impl AnyJsNamedImportSpecifier {
                 .import_named_clause()
                 .and_then(|x| x.type_token())
                 .is_some()
+    }
+
+    /// Imported name of this import specifier
+    ///
+    /// ```
+    /// use biome_js_factory::make;
+    /// use biome_js_syntax::AnyJsNamedImportSpecifier;
+    ///
+    /// let binding = make::js_identifier_binding(make::ident("React"));
+    /// let specifier = make::js_shorthand_named_import_specifier(binding.into()).build();
+    /// let specifier = AnyJsNamedImportSpecifier::JsShorthandNamedImportSpecifier(specifier);
+    ///
+    /// assert_eq!(specifier.imported_name().unwrap().text_trimmed(), "React");
+    /// ```
+    pub fn imported_name(&self) -> Option<JsSyntaxToken> {
+        match self {
+            AnyJsNamedImportSpecifier::JsNamedImportSpecifier(specifier) => {
+                specifier.name().ok()?.value().ok()
+            }
+            AnyJsNamedImportSpecifier::JsShorthandNamedImportSpecifier(specifier) => specifier
+                .local_name()
+                .ok()?
+                .as_js_identifier_binding()?
+                .name_token()
+                .ok(),
+            AnyJsNamedImportSpecifier::JsBogusNamedImportSpecifier(_) => None,
+        }
+    }
+
+    /// Local name of this import specifier
+    ///
+    /// ```
+    /// use biome_js_factory::make;
+    /// use biome_js_syntax::AnyJsNamedImportSpecifier;
+    ///
+    /// let binding = make::js_identifier_binding(make::ident("React"));
+    /// let specifier = make::js_shorthand_named_import_specifier(binding.into()).build();
+    /// let specifier = AnyJsNamedImportSpecifier::JsShorthandNamedImportSpecifier(specifier);
+    ///
+    /// let name_token = specifier.local_name().unwrap().as_js_identifier_binding().unwrap().name_token();
+    /// assert_eq!(name_token.unwrap().text_trimmed(), "React");
+    /// ```
+    pub fn local_name(&self) -> Option<AnyJsBinding> {
+        match self {
+            Self::JsBogusNamedImportSpecifier(_) => None,
+            Self::JsNamedImportSpecifier(specifier) => specifier.local_name().ok(),
+            Self::JsShorthandNamedImportSpecifier(specifier) => specifier.local_name().ok(),
+        }
     }
 }
 
